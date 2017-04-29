@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+
 using UnityEngine;
 
 public class LoginCanvas : MonoBehaviour
@@ -8,6 +8,8 @@ public class LoginCanvas : MonoBehaviour
     public UnityEngine.UI.InputField loginInputField;
 
     public UnityEngine.UI.InputField passwordInputField;
+
+    public UnityEngine.UI.Text debug;
 
     // Use this for initialization
     void Start()
@@ -39,6 +41,12 @@ public class LoginCanvas : MonoBehaviour
         string password = passwordInputField.text;
 
 
-        EditorUtility.DisplayDialog("Debug", "Login: " + login + "\nPassword: " + password, "Не ну ок", "Похер");
+        Debug("Login: " + login + "\nPassword: " + password);
+
+    }
+
+    public void Debug(string message)
+    {
+        debug.text = message;
     }
 }
