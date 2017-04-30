@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class LoginCanvas : MonoBehaviour
@@ -10,6 +10,9 @@ public class LoginCanvas : MonoBehaviour
     public UnityEngine.UI.InputField passwordInputField;
 
     public UnityEngine.UI.Text debug;
+
+
+    LoginClient loginClient = Context.loginClient;
 
     // Use this for initialization
     void Start()
@@ -42,6 +45,7 @@ public class LoginCanvas : MonoBehaviour
 
 
         Debug("Login: " + login + "\nPassword: " + password);
+        loginClient.CreateLoginSession();
 
     }
 
