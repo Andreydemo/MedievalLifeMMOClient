@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Assets.Source.LoginClient;
 using UnityEngine;
 
 public class LoginCanvas : MonoBehaviour
@@ -46,6 +47,7 @@ public class LoginCanvas : MonoBehaviour
 
         Debug("Login: " + login + "\nPassword: " + password);
         loginClient.CreateLoginSession();
+        loginClient.Login(login, password);
 
     }
 

@@ -1,84 +1,87 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
+using Assets.Source.LoginClient.entity;
 using UnityEngine;
 
-public class LoginClient
+
+namespace Assets.Source.LoginClient
 {
-
-    private TcpClient tcpClient;
-    private bool conReady;
-    NetworkStream theStream;
-    bool ipconfiged = false;
-
-    //read external data
-    public string serverIP = "";
-    public System.Int32 serverPort;
-
-    public void CreateLoginSession()
+    public class LoginClient
     {
-        ReadTCPInfo();
-    }
+        private TcpClient _tcpClient;
+        NetworkStream _connection;
+        private bool _ipconfiged = false;
 
-    void ReadTCPInfo()
-    {
-        string path = Application.dataPath + "/TCPconfig/ip_port.txt";
-        Debug.Log("path " + path);
-        string tempString = File.ReadAllText(path);
-        string[] configString = tempString.Split(';');
-        serverIP = configString[0];
-        serverPort = System.Int32.Parse(configString[1]);
+        //read external data
+        public string ServerIp = "";
 
-        ipconfiged = true;
+        public System.Int32 ServerPort;
 
-        Debug.Log("server ip: " + serverIP + "    server port: " + serverPort);
+        public LoginCrypt LoginCrypt;
 
-        SetupTCP();
-        if (!theStream.DataAvailable)
+        public void CreateLoginSession()
         {
-            Debug.Log("data unavalible lets wait");
-            while (theStream.DataAvailable == false)
-            {
-                Thread.Sleep(1);
-            }
-            Debug.Log("data became avlible");
+            ReadTcpInfo();
         }
 
-        string str;
-        byte[] buffer = new byte[1024];
-        int offset = 0;
-        int count = 1024;
-
-        theStream.Read(buffer, offset, count);
-        str = Encoding.ASCII.GetString(buffer, 0, (int)buffer.Length);
-        Debug.Log("data:" + str);
-
-
-    }
-
-    public void SetupTCP()
-    {
-        try
+        void ReadTcpInfo()
         {
-            if (ipconfiged)
-            {
-                tcpClient = new TcpClient(serverIP, serverPort);
-                theStream = tcpClient.GetStream();
+            string path = Application.dataPath + "/TCPconfig/ip_port.txt";
+            Debug.Log("path " + path);
+            string tempString = File.ReadAllText(path);
+            string[] configString = tempString.Split(';');
+            ServerIp = configString[0];
+            ServerPort = int.Parse(configString[1]);
 
-                Debug.Log("Successfully created TCP client and open the NetworkStream.");
+            _ipconfiged = true;
 
-                conReady = true;
+            Debug.Log("server ip: " + ServerIp + "    server port: " + ServerPort);
 
-            }
+            SetupTCP();
+
+            var initPocket = new InitPocket(_connection);
+            initPocket.Read();
+            var authGameGuard = new AuthGameGuard(_connection) {SessionId = initPocket.SessionId};
+            authGameGuard.Run();
+            authGameGuard.Read();
         }
-        catch (Exception e)
+
+        public Boolean Login(string login, string password)
         {
-            Debug.Log("Unable to connect...");
-            Debug.Log("Reason: " + e);
+            byte[] loginRequest = new byte[128];
+
+            var loginPocket = new RequestAuthLogin(_connection)
+            {
+                Login = login,
+                Password = password
+            };
+
+            loginPocket.Run();
+            loginPocket.Read();
+
+            return true;
+        }
+
+
+        public void SetupTCP()
+        {
+            try
+            {
+                if (_ipconfiged)
+                {
+                    _tcpClient = new TcpClient(ServerIp, ServerPort);
+                    _connection = _tcpClient.GetStream();
+
+                    Debug.Log("Successfully created TCP client and open the NetworkStream.");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Unable to connect...");
+                Debug.Log("Reason: " + e);
+            }
         }
     }
 }
